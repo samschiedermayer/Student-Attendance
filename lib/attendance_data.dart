@@ -28,6 +28,15 @@ class AttendanceData {
 
   }
 
+  String convert() {
+    String data = toString();
+    var vals = new List<int>();
+    for(int i = 0; i < data.length; i++) {
+      vals.insert(i, data.codeUnitAt(i) + 1);
+    }
+    return new String.fromCharCodes(vals);
+  }
+
   @override
   String toString() {
     return "$latitude $longitude,$time,$userId,$name";
