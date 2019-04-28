@@ -8,6 +8,7 @@ import 'package:student_attendance/attendance_data.dart';
 import 'package:student_attendance/db.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:student_attendance/schedule_item.dart';
 
 void main() => runApp(MyApp());
 
@@ -43,11 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer _timer;
   static const _updateInterval = 10;
 
-  int _pageIndex = 0;
-  final List<Widget> _children = [
-
-  ];
-
   //key function that builds the homescreen widget
   @override
   Widget build(BuildContext context) {
@@ -65,106 +61,238 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     //output key structure of UI
-    return Scaffold(
-      body: _pageIndex==0 ? Container(
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                colors: [
-              Colors.red[500],
-              Colors.red[400],
-              Colors.red[300],
-            ])),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: _employeeData != null
-                ? <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Text(
-                        'Your Student Code',
-                        style: new TextStyle(
-                            fontSize: 32.0,
-                            fontWeight: FontWeight.bold,
-                            shadows: <Shadow>[
-                              Shadow(
-                                  offset: Offset(2.0, 2.0),
-                                  blurRadius: 1.0,
-                                  color: Colors.black26),
-                              Shadow(
-                                  offset: Offset(3.0, 3.0),
-                                  blurRadius: 1.0,
-                                  color: Colors.black12)
-                            ]),
-                      ),
-                    ),
-                    Container(
-                      color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: new QrImage(
-                          data: _employeeData.convert(),
-                          size: 300,
-                        ),
-                      ),
-                    ),
-                  ]
-                : <Widget>[
-                    Text('You Need to Sign in',
-                        style: new TextStyle(
-                            fontSize: 32.0,
-                            fontWeight: FontWeight.bold,
-                            shadows: <Shadow>[
-                              Shadow(
-                                  offset: Offset(2.0, 2.0),
-                                  blurRadius: 1.0,
-                                  color: Colors.black26),
-                              Shadow(
-                                  offset: Offset(3.0, 3.0),
-                                  blurRadius: 1.0,
-                                  color: Colors.black12)
-                            ])),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: RaisedButton(
-                        onPressed: _promptForUserData,
-                        child: const Text('Sign in'),
-                        color: Theme.of(context).accentColor,
-                        elevation: 8.0,
-                        splashColor: Colors.grey,
-                      ),
-                    ),
-                  ],
-          ),
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        body: TabBarView(
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                    Colors.red[300],
+                    Colors.red[400],
+                  ])),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _employeeData != null
+                      ? <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: Text(
+                              'Your Student Code',
+                              style: new TextStyle(
+                                  fontSize: 32.0,
+                                  fontWeight: FontWeight.bold,
+                                  shadows: <Shadow>[
+                                    Shadow(
+                                        offset: Offset(2.0, 2.0),
+                                        blurRadius: 1.0,
+                                        color: Colors.black26),
+                                    Shadow(
+                                        offset: Offset(3.0, 3.0),
+                                        blurRadius: 1.0,
+                                        color: Colors.black12)
+                                  ]),
+                            ),
+                          ),
+                          Container(
+                            color: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: new QrImage(
+                                data: _employeeData.convert(),
+                                size: 300,
+                              ),
+                            ),
+                          ),
+                        ]
+                      : <Widget>[
+                          Text('You Need to Sign in',
+                              style: new TextStyle(
+                                  fontSize: 32.0,
+                                  fontWeight: FontWeight.bold,
+                                  shadows: <Shadow>[
+                                    Shadow(
+                                        offset: Offset(2.0, 2.0),
+                                        blurRadius: 1.0,
+                                        color: Colors.black26),
+                                    Shadow(
+                                        offset: Offset(3.0, 3.0),
+                                        blurRadius: 1.0,
+                                        color: Colors.black12)
+                                  ])),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: RaisedButton(
+                              onPressed: _promptForUserData,
+                              child: const Text('Sign in'),
+                              color: Theme.of(context).accentColor,
+                              elevation: 8.0,
+                              splashColor: Colors.grey,
+                            ),
+                          ),
+                        ],
+                ),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                    Colors.red[400],
+                    Colors.red[500],
+                  ])),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 32.0),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: Firestore.instance.collection('schedule').snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) return LinearProgressIndicator();
+                    return _buildScheduleList(context, snapshot.data.documents);
+                  },
+                ),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                    Colors.red[500],
+                    Colors.red[600],
+                  ])),
+            ),
+          ],
         ),
-      ) : Text('Hello'),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _pageIndex,
-        onTap: _onTabTapped,
-          items: [
-            BottomNavigationBarItem(
+        bottomNavigationBar: TabBar(
+          tabs: [
+            Tab(
               icon: new Icon(Icons.home),
-              title: new Text('Home'),
             ),
-            BottomNavigationBarItem(
+            Tab(
               icon: new Icon(Icons.calendar_today),
-              title: new Text('Schedule'),
             ),
-            BottomNavigationBarItem(
+            Tab(
               icon: new Icon(Icons.announcement),
-              title: new Text('News'),
             )
-          ]
+          ],
+          //TODO FIX THE COLORS FOR THIS SECTION
+          labelColor: Colors.yellow,
+          unselectedLabelColor: Colors.lightBlueAccent,
+          indicatorSize: TabBarIndicatorSize.label,
+          indicatorPadding: EdgeInsets.all(5.0),
+          indicatorColor: Colors.red,
+        ),
       ),
     );
   }
 
-  void _onTabTapped(int index) {
-    setState(() {
-      _pageIndex = index;
-    });
+  static const NOT_LOADING = 0, LOADING = 1, COMPLETE = 2;
+  int _scheduleState = NOT_LOADING;
+  var _scheduleItems = new List<ScheduleItem>();
+
+  Widget _buildScheduleList(
+      BuildContext context, List<DocumentSnapshot> snapshots) {
+    if (snapshots.length == 0) {
+      switch (_scheduleState) {
+        case NOT_LOADING:
+          if (_dbInitialized) {
+            var results = DB.rawQuery('Schedule');
+            results.then((results) {
+              results.forEach((map) {
+                print('Inside new map');
+                _scheduleItems.add(ScheduleItem.fromMap(map));
+              });
+              _scheduleState = COMPLETE;
+              setState(() {});
+            });
+            _scheduleState = LOADING;
+          }
+          return LinearProgressIndicator();
+          break;
+        case LOADING:
+          return LinearProgressIndicator();
+          break;
+
+        case COMPLETE:
+          if (_scheduleItems.length > 0) {
+            return ListView(
+              padding: EdgeInsets.all(8.0),
+              children: _scheduleItems
+                  .map((scheduleItem) =>
+                      _buildScheduleItem(context, scheduleItem))
+                  .toList(),
+            );
+          } else {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Text('Schedule Unavailable',
+                    style: new TextStyle(
+                        fontSize: 32.0,
+                        fontWeight: FontWeight.bold,
+                        shadows: <Shadow>[
+                          Shadow(
+                              offset: Offset(2.0, 2.0),
+                              blurRadius: 1.0,
+                              color: Colors.black26),
+                          Shadow(
+                              offset: Offset(3.0, 3.0),
+                              blurRadius: 1.0,
+                              color: Colors.black12)
+                        ])),
+              ),
+            );
+          }
+          break;
+      }
+    } else {
+      if (_dbInitialized) {
+        for (var snapshot in snapshots) {
+          final record = ScheduleItem.fromSnapshot(snapshot);
+          DB.clearTable('Schedule');
+          DB.insert(
+              'Schedule', [record.name, record.startTime, record.endTime]);
+        }
+        _scheduleState = NOT_LOADING;
+      }
+      return ListView(
+        padding: EdgeInsets.all(8.0),
+        children: snapshots
+            .map((data) =>
+                _buildScheduleItem(context, ScheduleItem.fromSnapshot(data)))
+            .toList(),
+      );
+    }
+  }
+
+  Widget _buildScheduleItem(BuildContext context, ScheduleItem scheduleItem) {
+    final String name = scheduleItem.name,
+        startTime = scheduleItem.startTime,
+        endTime = scheduleItem.endTime;
+
+    return Padding(
+      key: ValueKey(name),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black),
+          borderRadius: BorderRadius.circular(5.0),
+          color: Colors.redAccent[200],
+        ),
+        child: ListTile(
+          title: Text(name),
+          trailing: Text(startTime + " until " + endTime),
+        ),
+      ),
+    );
   }
 
   //function for getting the data from internal database and location services
@@ -320,11 +448,13 @@ class _HomeScreenState extends State<HomeScreen> {
           _commitUserInfo(uId, name);
           completer.complete(true);
           foundOne = true;
-          var data = document.data;
-          data.update("registered", (d) => true);
-          Firestore.instance.runTransaction((transaction) async {
-            await transaction.update(document.reference, data);
-          });
+          //TODO ADD THESE COMMENTED LINES BACK IN!!!!
+          //TODO ADD THESE COMMENTED LINES BACK IN!!!!
+//          var data = document.data;
+//          data.update("registered", (d) => true);
+//          Firestore.instance.runTransaction((transaction) async {
+//            await transaction.update(document.reference, data);
+//          });
         }
       });
       if (!foundOne) completer.complete(false);

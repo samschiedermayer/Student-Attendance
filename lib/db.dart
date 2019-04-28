@@ -17,6 +17,8 @@ class DB {
         onCreate: (Database db, int version) async {
           await db.execute(
               'CREATE TABLE UserData (userId TEXT, name TEXT)');
+          await db.execute(
+              'CREATE TABLE Schedule (name TEXT, startTime TEXT, endTime TEXT, UNIQUE(name, startTime, endTime))');
         }, onOpen: success);
   }
 
@@ -28,7 +30,7 @@ class DB {
   //insert multiple objects into a specified table in the database
   static void insert(String table, List<Object> data) async {
     await database.transaction((txn) async {
-      String command = 'INSERT INTO ${table}\n VALUES (';
+      String command = 'INSERT OR IGNORE INTO ${table}\n VALUES (';
       for (int i = 0; i < data.length; i++) {
         Object item = data[i];
         if (i != data.length - 1) {
@@ -46,7 +48,14 @@ class DB {
       command = command + ')';
 
       int id = await txn.rawInsert(command);
-      print(id);
     });
   }
+
+  static Future clearTable(String table) async {
+    await database.transaction((txn) async {
+      String command = 'DELETE FROM $table';
+      await txn.rawDelete(command);
+    });
+  }
+
 }
