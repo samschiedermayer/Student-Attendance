@@ -16,17 +16,18 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-
   Geolocator _geolocator; //used for getting user location
-  AttendanceData
-  _studentData; //stores data on employee that will be encoded later
-  bool _shouldUpdate = true; //
+  AttendanceData _studentData; //stores data on student
+  bool _shouldUpdate = true;
+
+  static const NOT_LOADED = 0, LOADING = 1, LOADED = 2;
+  int _loadingState = NOT_LOADED;
+  // ignore: unused_field
   Timer _timer;
   static const _updateInterval = 4;
 
   @override
   Widget build(BuildContext context) {
-
     //update QR code if the database is good to go and it is a time that it needs to update
     if (DB.initialized && _shouldUpdate) {
       _generateQRData();
@@ -37,62 +38,62 @@ class _HomeTabState extends State<HomeTab> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: _studentData != null
             ? <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
-            child: Text(
-              'Hello, $name',
-              style: new TextStyle(
-                  fontSize: 32.0,
-                  fontWeight: FontWeight.bold,
-                  shadows: <Shadow>[
-                    Shadow(
-                        offset: Offset(1.0, 1.0),
-                        blurRadius: 1.0,
-                        color: Colors.black26),
-                    Shadow(
-                        offset: Offset(2.0, 2.0),
-                        blurRadius: 1.0,
-                        color: Colors.black12)
-                  ]),
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: new QrImage(
-                data: _studentData.convert(),
-                size: 300,
-              ),
-            ),
-          ),
-        ]
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Text(
+                    'Hello, $name',
+                    style: new TextStyle(
+                        fontSize: 32.0,
+                        fontWeight: FontWeight.bold,
+                        shadows: <Shadow>[
+                          Shadow(
+                              offset: Offset(1.0, 1.0),
+                              blurRadius: 1.0,
+                              color: Colors.black26),
+                          Shadow(
+                              offset: Offset(2.0, 2.0),
+                              blurRadius: 1.0,
+                              color: Colors.black12)
+                        ]),
+                  ),
+                ),
+                Container(
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: new QrImage(
+                      data: _studentData.convert(),
+                      size: 300,
+                    ),
+                  ),
+                ),
+              ]
             : <Widget>[
-          Text('You Need to Sign in',
-              style: new TextStyle(
-                  fontSize: 32.0,
-                  fontWeight: FontWeight.bold,
-                  shadows: <Shadow>[
-                    Shadow(
-                        offset: Offset(1.0, 1.0),
-                        blurRadius: 1.0,
-                        color: Colors.black26),
-                    Shadow(
-                        offset: Offset(2.0, 2.0),
-                        blurRadius: 1.0,
-                        color: Colors.black12)
-                  ])),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: RaisedButton(
-              onPressed: _promptForUserData,
-              child: const Text('Sign in'),
-              color: Theme.of(context).accentColor,
-              elevation: 8.0,
-              splashColor: Colors.grey,
-            ),
-          ),
-        ],
+                Text('You Need to Sign in',
+                    style: new TextStyle(
+                        fontSize: 32.0,
+                        fontWeight: FontWeight.bold,
+                        shadows: <Shadow>[
+                          Shadow(
+                              offset: Offset(1.0, 1.0),
+                              blurRadius: 1.0,
+                              color: Colors.black26),
+                          Shadow(
+                              offset: Offset(2.0, 2.0),
+                              blurRadius: 1.0,
+                              color: Colors.black12)
+                        ])),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: RaisedButton(
+                    onPressed: _promptForUserData,
+                    child: const Text('Sign in'),
+                    color: Theme.of(context).accentColor,
+                    elevation: 8.0,
+                    splashColor: Colors.grey,
+                  ),
+                ),
+              ],
       ),
     );
   }
@@ -105,7 +106,7 @@ class _HomeTabState extends State<HomeTab> {
     _geolocator = Geolocator();
 
     Future<GeolocationStatus> locationStatus =
-    _geolocator.checkGeolocationPermissionStatus();
+        _geolocator.checkGeolocationPermissionStatus();
     locationStatus.then((status) async {
       switch (status) {
         case GeolocationStatus.granted:
@@ -125,15 +126,11 @@ class _HomeTabState extends State<HomeTab> {
               if (userId != null) {
                 name = name == null ? "guest" : name;
                 setState(() {
-                  _studentData = new AttendanceData(
-                      pos.latitude,
-                      pos.longitude,
-                      new DateTime.now().millisecondsSinceEpoch,
-                      userId,
-                      name);
+                  _studentData = new AttendanceData(pos.latitude, pos.longitude,
+                      new DateTime.now().millisecondsSinceEpoch, userId, name);
                 });
                 _timer =
-                new Timer(const Duration(seconds: _updateInterval), () {
+                    new Timer(const Duration(seconds: _updateInterval), () {
                   setState(() {
                     _shouldUpdate = true;
                   });
@@ -147,7 +144,7 @@ class _HomeTabState extends State<HomeTab> {
           });
           break;
         default:
-        //This state will be triggered in any instance where the user has not given the application permission to access location
+          //This state will be triggered in any instance where the user has not given the application permission to access location
           await PermissionHandler()
               .requestPermissions([PermissionGroup.location]);
           setState(() {});
@@ -222,7 +219,7 @@ class _HomeTabState extends State<HomeTab> {
 
   Future<bool> _verifyUserInfo(String uId) async {
     Future<QuerySnapshot> docs =
-    Firestore.instance.collection('users').getDocuments();
+        Firestore.instance.collection('users').getDocuments();
     var completer = new Completer<bool>();
     await docs.then((snapshot) {
       bool foundOne = false;
@@ -267,5 +264,4 @@ class _HomeTabState extends State<HomeTab> {
   void _commitUserInfo(String uId, String name) {
     DB.insert("UserData", [uId, name]);
   }
-
 }
