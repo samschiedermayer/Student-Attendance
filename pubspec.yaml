@@ -22,9 +22,16 @@ dependencies:
 
   url_launcher: ^3.0.2
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: "^0.7.0"
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.jpg"
 
 flutter:
 

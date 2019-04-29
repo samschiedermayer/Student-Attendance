@@ -89,7 +89,8 @@ class _NewsTabState extends State<NewsTab> {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text(name),
+                child: Text(name,
+                style: TextStyle(fontWeight: FontWeight.bold),),
               ),
               GestureDetector(
                 onTap: () => _onImageTapped(linkUrl),

@@ -19,7 +19,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Student Attendance',
+      title: 'Hortonville High School',
       theme: ThemeData(
         primarySwatch: Colors.red,
       ),
@@ -53,7 +53,7 @@ class _MainScreenState extends State<MainScreen> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('School App'),
+          title: Text('Hortonville High School'),
         ),
         body: TabBarView(
           children: <Widget>[

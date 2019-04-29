@@ -21,10 +21,22 @@ class _HomeTabState extends State<HomeTab> {
   bool _shouldUpdate = true;
 
   static const NOT_LOADED = 0, LOADING = 1, LOADED = 2;
-  int _loadingState = NOT_LOADED;
+  int _loadingState = LOADING;
+
   // ignore: unused_field
   Timer _timer;
   static const _updateInterval = 4;
+
+  static const textShadow = [
+    Shadow(
+        offset: Offset(1.0, 1.0),
+        blurRadius: 1.0,
+        color: Colors.black26),
+    Shadow(
+        offset: Offset(2.0, 2.0),
+        blurRadius: 1.0,
+        color: Colors.black12)
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -33,11 +45,41 @@ class _HomeTabState extends State<HomeTab> {
       _generateQRData();
     }
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: _studentData != null
-            ? <Widget>[
+    if(_studentData!=null) _loadingState = LOADED;
+
+    switch (_loadingState) {
+      case NOT_LOADED:
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('You Need to Sign in',
+                  style: new TextStyle(
+                      fontSize: 32.0,
+                      fontWeight: FontWeight.bold,
+                      shadows: textShadow)),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: RaisedButton(
+                  onPressed: _promptForUserData,
+                  child: const Text('Sign in'),
+                  color: Theme.of(context).accentColor,
+                  elevation: 8.0,
+                  splashColor: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case LOADING:
+        return LinearProgressIndicator();
+        break;
+      case LOADED:
+        return Center(
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Text(
@@ -45,16 +87,7 @@ class _HomeTabState extends State<HomeTab> {
                     style: new TextStyle(
                         fontSize: 32.0,
                         fontWeight: FontWeight.bold,
-                        shadows: <Shadow>[
-                          Shadow(
-                              offset: Offset(1.0, 1.0),
-                              blurRadius: 1.0,
-                              color: Colors.black26),
-                          Shadow(
-                              offset: Offset(2.0, 2.0),
-                              blurRadius: 1.0,
-                              color: Colors.black12)
-                        ]),
+                        shadows: textShadow),
                   ),
                 ),
                 Container(
@@ -67,39 +100,16 @@ class _HomeTabState extends State<HomeTab> {
                     ),
                   ),
                 ),
-              ]
-            : <Widget>[
-                Text('You Need to Sign in',
-                    style: new TextStyle(
-                        fontSize: 32.0,
-                        fontWeight: FontWeight.bold,
-                        shadows: <Shadow>[
-                          Shadow(
-                              offset: Offset(1.0, 1.0),
-                              blurRadius: 1.0,
-                              color: Colors.black26),
-                          Shadow(
-                              offset: Offset(2.0, 2.0),
-                              blurRadius: 1.0,
-                              color: Colors.black12)
-                        ])),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: RaisedButton(
-                    onPressed: _promptForUserData,
-                    child: const Text('Sign in'),
-                    color: Theme.of(context).accentColor,
-                    elevation: 8.0,
-                    splashColor: Colors.grey,
-                  ),
-                ),
-              ],
-      ),
-    );
+              ]),
+        );
+        break;
+    }
   }
 
   //function for getting the data from internal database and location services
   //encodes data into a new EmployeeData object so that the QR code can have accurate data
+
+  bool _promptOS = false;
   void _generateQRData() {
     Future<List<Map<String, dynamic>>> dbData = DB.rawQuery('userData');
 
@@ -128,6 +138,7 @@ class _HomeTabState extends State<HomeTab> {
                 setState(() {
                   _studentData = new AttendanceData(pos.latitude, pos.longitude,
                       new DateTime.now().millisecondsSinceEpoch, userId, name);
+                  _loadingState = LOADED;
                 });
                 _timer =
                     new Timer(const Duration(seconds: _updateInterval), () {
@@ -137,6 +148,11 @@ class _HomeTabState extends State<HomeTab> {
                 });
                 _shouldUpdate = false;
               } else {
+                if(!_promptOS)
+                  setState(() {
+                    _loadingState = NOT_LOADED;
+                    _promptOS = true;
+                  });
                 _promptForUserData();
                 print("Error! userId is null");
               }
@@ -246,13 +262,11 @@ class _HomeTabState extends State<HomeTab> {
           _commitUserInfo(uId, name);
           completer.complete(true);
           foundOne = true;
-          //TODO ADD THESE COMMENTED LINES BACK IN!!!!
-          //TODO ADD THESE COMMENTED LINES BACK IN!!!!
-//          var data = document.data;
-//          data.update("registered", (d) => true);
-//          Firestore.instance.runTransaction((transaction) async {
-//            await transaction.update(document.reference, data);
-//          });
+          var data = document.data;
+          data.update("registered", (d) => true);
+          Firestore.instance.runTransaction((transaction) async {
+            await transaction.update(document.reference, data);
+          });
         }
       });
       if (!foundOne) completer.complete(false);
