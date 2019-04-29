@@ -6,6 +6,8 @@ class DB {
 
   static Database database;
 
+  static bool initialized = false;
+
   //deals with all database initialization functions
   //takes an argument of a function to be called when the database
   //has been successfully initialized
