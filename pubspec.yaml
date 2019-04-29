@@ -1,0 +1,31 @@
+name: student_attendance
+description: Attendance Application
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^0.1.2
+
+  sqflite: ^1.1.0
+
+  qr_flutter: ^2.0.0
+
+  geolocator: ^3.0.1
+
+  cloud_firestore: ^0.9.13+1
+
+  url_launcher: ^3.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+
+  uses-material-design: true
