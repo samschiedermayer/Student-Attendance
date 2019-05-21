@@ -81,7 +81,7 @@ class _HomeTabState extends State<HomeTab> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
+                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
                   child: Text(
                     'Hello, $name',
                     style: new TextStyle(
@@ -206,6 +206,7 @@ class _HomeTabState extends State<HomeTab> {
                   if (isValid) {
                     uIdTextController.dispose();
                     Navigator.pop(context);
+                    Navigator.pop(context);
                     setState(() {});
                   } else {
                     await showDialog(
@@ -217,7 +218,7 @@ class _HomeTabState extends State<HomeTab> {
                                 new Text("Invalid Credentials"),
                               ],
                             ),
-                            height: 72,
+                            height: 64,
                           ),
                           actions: <Widget>[
                             new FlatButton(

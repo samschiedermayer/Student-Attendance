@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:student_attendance/news_item.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
 class NewsTab extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _NewsTabState();
@@ -69,9 +68,32 @@ class _NewsTabState extends State<NewsTab> {
             borderRadius: BorderRadius.circular(5.0),
             color: Theme.of(context).accentColor,
           ),
-          child: ListTile(
-            title: Text(name),
-            trailing: Text(content),
+          child: Column(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Divider(
+                  color: Colors.black,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 16.0, right: 16.0, bottom: 12.0),
+                child: Text(
+                  content,
+                  textDirection: TextDirection.ltr,
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -79,28 +101,47 @@ class _NewsTabState extends State<NewsTab> {
       return Padding(
         key: ValueKey(name),
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black),
-            borderRadius: BorderRadius.circular(5.0),
-            color: Theme.of(context).accentColor,
-          ),
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(name,
-                style: TextStyle(fontWeight: FontWeight.bold),),
-              ),
-              GestureDetector(
-                onTap: () => _onImageTapped(linkUrl),
-                child: Image.network(imageUrl),
-              )
-            ],
+        child: GestureDetector(
+          onTap: () => _onImageTapped(linkUrl),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              borderRadius: BorderRadius.circular(5.0),
+              color: Theme.of(context).accentColor,
+            ),
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    name,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Divider(
+                    color: Colors.black,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Container(
+                    child: Image.network(imageUrl),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black),
+                      borderRadius: BorderRadius.circular(5.0),
+                      color: Theme.of(context).accentColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
-    } else return Text('Error');
+    } else
+      return Text('Error');
   }
 
   void _onImageTapped(String url) async {
@@ -110,5 +151,4 @@ class _NewsTabState extends State<NewsTab> {
       throw 'Could not launch $url';
     }
   }
-
 }
